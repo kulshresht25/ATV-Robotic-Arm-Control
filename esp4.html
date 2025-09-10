@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bot Control Panel • ESP32</title>
+<style>
+:root {
+  --bg:#0b0f14; --panel:#121820; --muted:#1a2230;
+  --accent:#4da3ff; --accent-2:#7cf6e9;
+  --text:#e6edf3; --sub:#9db0c3;
+  --danger:#ff6b6b; --success:#23d18b;
+  --radius:16px; --shadow:0 10px 30px rgba(0, 0, 0, 0.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+
+/* Layout */
+.app{display:grid;grid-template-columns:35% 65%;gap:14px;padding:14px;height:100vh;}
+.leftCol{display:grid;grid-template-rows:40% 30%;gap:14px;}
+.rightCol{display:grid;grid-template-rows:auto 1fr auto;gap:14px;}
+
+/* Card */
+.card{background:var(--panel);border:1px solid var(--muted);
+  border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.cardHeader{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--muted);}
+.cardHeader h3{margin:0;font-size:14px;font-weight:600;color:var(--sub)}
+.cardBody{flex:1;padding:12px;display:flex;flex-direction:column}
+
+/* Camera */
+#camCard video{width:100%;height:100%;object-fit:cover;background:#000;border-radius:8px}
+#camStatus{font-size:12px;color:var(--sub);margin-top:6px}
+
+/* Sensors */
+#sensorList{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;flex:1;}
+.sensorItem{background:var(--muted);border-radius:12px;padding:12px;text-align:center}
+.sensorLabel{font-size:12px;color:var(--sub)}
+.sensorValue{font-size:20px;font-weight:700;color:var(--accent-2)}
+
+/* Console */
+.console{background:#0e141b;border:1px dashed var(--muted);border-radius:12px;
+  padding:10px;overflow-y:auto;max-height:200px;font-family:ui-monospace,monospace;
+  font-size:12px;line-height:1.3;color:#c9d4e3}
+.console p{margin:.2rem 0}
+
+/* Connection */
+.connBar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  background:#0e141b;padding:10px;border-radius:12px;border:1px solid var(--muted);}
+.connBar input,.connBar select{flex:1;min-width:160px;background:#121820;
+  border:1px solid var(--muted);color:var(--text);border-radius:10px;padding:10px}
+.connBar input:focus,.connBar select:focus{border-color:var(--accent);}
+.connBar button{flex-shrink:0;background:var(--accent);color:#001627;border:none;
+  padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer}
+.connBar button.ghost{background:transparent;color:var(--sub);border:1px solid var(--muted)}
+.connBar .state{margin-left:auto;font-size:12px;color:var(--sub);font-weight:600}
+
+/* Bot Drive + Arm */
+.driveArmContainer{display:flex;gap:14px;flex:1}
+#botDriveCard{width:30%}
+.botControls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;justify-items:center;align-items:center;margin-top:5px}
+.botControls button{width:60px;height:45px;border-radius:12px;font-weight:700;
+  background:var(--accent);color:#001627;border:none;cursor:pointer;
+  transition:transform .1s,background .1s}
+.botControls button.stop{background:var(--danger);color:#fff}
+.botControls button:active{transform:translateY(2px)}
+
+/* Arm */
+#armCard{flex:1}
+.sliderGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.slider{background:var(--muted);border-radius:14px;padding:12px}
+.sliderHeader{display:flex;justify-content:space-between;margin-bottom:10px}
+.slider label{font-size:12px;color:var(--sub)}
+.slider output{font-weight:700}
+.slider input{width:100%}
+.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:14px}
+.actions button{background:#0e141b;border:1px solid var(--muted);color:var(--text);
+  border-radius:12px;padding:10px;cursor:pointer}
+.actions button.primary{background:var(--accent);color:#001627;font-weight:700;border:none}
+.actions button.danger{background:var(--danger);color:#2a0b0b;font-weight:700;border:none}
+
+/* Responsive */
+@media(max-width:1000px){.sliderGrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){.app{grid-template-columns:1fr}.driveArmContainer{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- LEFT -->
+  <div class="leftCol">
+    <div class="card" id="camCard">
+      <div class="cardHeader"><h3>Live Camera</h3><button class="ghost" id="flipBtn">Flip</button></div>
+      <div class="cardBody">
+        <video id="video" autoplay muted playsinline></video>
+        <div id="camStatus">Requesting camera…</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="cardHeader"><h3>Live Sensors</h3><span id="sensorStatus">—</span></div>
+      <div class="cardBody">
+        <div id="sensorList">
+          <div class="sensorItem"><span class="sensorLabel">Battery (V)</span><span class="sensorValue" id="s-batt">—</span></div>
+          <div class="sensorItem"><span class="sensorLabel">Temp (°C)</span><span class="sensorValue" id="s-temp">—</span></div>
+          <div class="sensorItem"><span class="sensorLabel">Distance (cm)</span><span class="sensorValue" id="s-dist">—</span></div>
+          <div class="sensorItem"><span class="sensorLabel">IMU Yaw (°)</span><span class="sensorValue" id="s-yaw">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="rightCol">
+    <div class="card">
+      <div class="cardHeader"><h3>Connection</h3></div>
+      <div class="cardBody">
+        <div class="connBar">
+          <input id="ip" type="text" placeholder="ESP32 IP (e.g. 192.168.4.1)">
+          <select id="proto"><option value="ws">WebSocket</option><option value="http">HTTP</option></select>
+          <button id="connectBtn">Connect</button>
+          <button id="disconnectBtn" class="ghost">Disconnect</button>
+          <span class="state" id="connState">Disconnected</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="driveArmContainer">
+      <!-- Bot Drive -->
+      <div class="card" id="botDriveCard">
+        <div class="cardHeader"><h3>Bot Drive Control</h3></div>
+        <div class="cardBody">
+          <div class="botControls">
+            <div></div><button id="btnForward">↑</button><div></div>
+            <button id="btnLeft">←</button><button class="stop" id="btnStopDrive">STOP</button><button id="btnRight">→</button>
+            <div></div><button id="btnBackward">↓</button><div></div>
+          </div>
+          <p style="text-align:center;font-size:12px;color:var(--sub)">Use W/A/S/D + Space</p>
+        </div>
+      </div>
+
+      <!-- Arm -->
+      <div class="card" id="armCard">
+        <div class="cardHeader"><h3>Robotic Arm Controls</h3></div>
+        <div class="cardBody">
+          <div class="sliderGrid" id="sliderGrid"></div>
+          <div class="actions">
+            <button class="primary" id="btnHome">Home</button>
+            <button class="primary" id="btnOpen">Open Gripper</button>
+            <button class="primary" id="btnClose">Close Gripper</button>
+            <button class="danger" id="btnStop">EMERGENCY STOP</button>
+            <button class="primary" id="btnPick">Pick</button>
+            <button class="primary" id="btnPlace">Place</button>
+            <button class="primary" id="btnWave">Wave</button>
+            <button class="primary" id="btnReset">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Console moved here -->
+    <div class="card console" id="console"></div>
+
+  </div>
+</div>
+
+<script>
+// --- Camera ---
+const video=document.getElementById('video'), camStatus=document.getElementById('camStatus'), flipBtn=document.getElementById('flipBtn');
+let facing='user', stream=null;
+async function startCam(){
+  try{
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}},audio:false});
+    video.srcObject=stream;camStatus.textContent="Camera active";
+  }catch(e){camStatus.textContent="Camera error: "+e.message;}
+}
+flipBtn.onclick=()=>{facing=(facing==='user'?'environment':'user');startCam();}
+if(navigator.mediaDevices?.getUserMedia) startCam();
+
+// --- Console Log ---
+const consoleEl=document.getElementById('console');
+function log(msg){const p=document.createElement('p');p.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`;consoleEl.appendChild(p);consoleEl.scrollTop=consoleEl.scrollHeight;}
+
+// --- Connection ---
+const ipEl=document.getElementById('ip'), protoEl=document.getElementById('proto'),
+  connState=document.getElementById('connState'), sensorStatus=document.getElementById('sensorStatus');
+let ws=null, poll=null;
+function setConn(ok){connState.textContent=ok?"Connected":"Disconnected";connState.style.color=ok?"var(--success)":"var(--sub)";}
+function connect(){const ip=ipEl.value;if(!ip){log("Enter IP");return;}protoEl.value==='ws'?wsConnect(ip):httpConnect(ip);}
+function disconnect(){if(ws){ws.close();ws=null;}if(poll){clearInterval(poll);poll=null;}setConn(false);sensorStatus.textContent="—";log("Disconnected");}
+function wsConnect(ip){ws=new WebSocket(`ws://${ip}:81/`);ws.onopen=()=>{setConn(true);log("WS connected");sensorStatus.textContent="WS"};ws.onclose=()=>disconnect();ws.onmessage=e=>{try{updateSensors(JSON.parse(e.data))}catch{}};}
+function httpConnect(ip){setConn(true);sensorStatus.textContent="HTTP";poll=setInterval(async()=>{try{const r=await fetch(`http://${ip}/sensors`);updateSensors(await r.json());}catch{}},500);}
+document.getElementById('connectBtn').onclick=connect;document.getElementById('disconnectBtn').onclick=disconnect;
+
+// --- Sensors ---
+const ids={battery:'s-batt',temp:'s-temp',dist:'s-dist',yaw:'s-yaw'};
+function updateSensors(data){for(const[k,v]of Object.entries(data)){if(ids[k]){const el=document.getElementById(ids[k]);el.textContent=(typeof v==="number"?v.toFixed(2):v)||"—";}}}
+
+// --- Arm Sliders ---
+const sliders=[{k:'base',l:'Base (°)',min:-180,max:180,val:0},{k:'shoulder',l:'Shoulder (°)',min:-90,max:90,val:0},{k:'elbow',l:'Elbow (°)',min:-120,max:120,val:0},{k:'wristPitch',l:'Wrist Pitch (°)',min:-90,max:90,val:0},{k:'wristRoll',l:'Wrist Roll (°)',min:-180,max:180,val:0},{k:'gripper',l:'Gripper (%)',min:0,max:100,val:50}];
+const grid=document.getElementById('sliderGrid'), sliderEls={};
+sliders.forEach(s=>{const d=document.createElement('div');d.className='slider';d.innerHTML=`<div class=\"sliderHeader\"><label>${s.l}</label><output>${s.val}</output></div><input type=\"range\" min=\"${s.min}\" max=\"${s.max}\" value=\"${s.val}\">`;grid.appendChild(d);const i=d.querySelector('input'),o=d.querySelector('output');i.oninput=()=>{o.value=i.value;sendPose()};sliderEls[s.k]=i;});
+function pose(){return Object.fromEntries(sliders.map(s=>[s.k,Number(sliderEls[s.k].value)]));}
+
+// --- Commands ---
+function send(obj, actionDesc=""){const ip=ipEl.value;if(!ip){log("Enter IP");return;}const msg=JSON.stringify(obj);if(protoEl.value==='ws'){if(ws?.readyState===1){ws.send(msg);log(`Sent via WS: ${actionDesc}`);}else{log("Not connected");}}else{fetch(`http://${ip}/command`,{method:"POST",headers:{'Content-Type':'application/json'},body:msg}).then(()=>log(`Sent via HTTP: ${actionDesc}`)).catch(()=>log("HTTP send failed"));}}
+function sendPose(){send({type:'pose',payload:pose()},"Pose updated");}
+
+// --- Dynamic Button Binding ---
+const buttonActions = {
+  btnHome: {obj:{type:'preset',payload:'home'}, desc:'Home (H)', key:'h'},
+  btnOpen: {obj:{type:'gripper',payload:100}, desc:'Open Gripper (O)', key:'o'},
+  btnClose: {obj:{type:'gripper',payload:0}, desc:'Close Gripper (C)', key:'c'},
+  btnStop: {obj:{type:'estop'}, desc:'Emergency Stop (E)', key:'e'},
+  btnPick: {obj:{type:'preset',payload:'pick'}, desc:'Pick (P)', key:'p'},
+  btnPlace: {obj:{type:'preset',payload:'place'}, desc:'Place (L)', key:'l'},
+  btnWave: {obj:{type:'preset',payload:'wave'}, desc:'Wave (V)', key:'v'},
+  btnReset: {obj:{type:'preset',payload:'reset'}, desc:'Reset(R)', key:'r'},
+  btnForward: {obj:{type:'drive',payload:'forward'}, desc:'Forward', key:'w'},
+  btnBackward: {obj:{type:'drive',payload:'backward'}, desc:'Backward', key:'s'},
+  btnLeft: {obj:{type:'drive',payload:'left'}, desc:'Left', key:'a'},
+  btnRight: {obj:{type:'drive',payload:'right'}, desc:'Right', key:'d'},
+  btnStopDrive: {obj:{type:'drive',payload:'stop'}, desc:'Stop Drive', key:' '}
+};
+
+for(const [id,action] of Object.entries(buttonActions)){
+  const el=document.getElementById(id);
+  if(el) el.onclick=()=>send(action.obj, action.desc);
+}
+
+// --- Keyboard Bindings ---
+document.addEventListener('keydown',e=>{
+  if(e.repeat) return;
+  const key = e.key.toLowerCase();
+  for(const action of Object.values(buttonActions)){
+    if(action.key === key){
+      send(action.obj, action.desc);
+      break;
+    }
+  }
+});
+</script>
+</body>
+</html>

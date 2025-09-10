@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prixx Robotics – ATV with Robotic Arm</title>
+<style>
+:root {
+  --bg:#0b0b0b; 
+  --panel:#1a1a1a; 
+  --muted:#292929;
+  --accent:#ff3b3b;      /* Red */
+  --accent-2:#ff8c42;    /* Orange */
+  --text:#f5f5f5; 
+  --sub:#bbbbbb;
+  --danger:#e60000; 
+  --success:#23d18b;
+  --radius:16px; 
+  --shadow:0 10px 30px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.6}
+.container{max-width:1100px;margin:0 auto;padding:20px}
+section{margin:60px 0}
+h1,h2,h3{color:var(--accent)}
+p{color:var(--sub);margin:12px 0}
+.card{background:var(--panel);border:1px solid var(--muted);border-radius:var(--radius);
+  padding:20px;box-shadow:var(--shadow);margin:20px 0}
+button,input{font-family:inherit}
+.flexRow{display:flex;gap:20px;flex-wrap:wrap}
+.flexCol{flex:1;min-width:300px}
+.logo{max-width:150px;margin-bottom:20px}
+.loginCard{max-width:400px;margin:0 auto;text-align:center}
+.loginCard input{width:100%;padding:12px;margin:8px 0;
+  border-radius:12px;border:1px solid var(--muted);background:var(--muted);color:var(--text)}
+.loginCard button{width:100%;padding:12px;background:var(--accent);
+  border:none;border-radius:12px;font-weight:700;color:#fff;cursor:pointer}
+.loginCard button:hover{background:var(--accent-2)}
+.error{color:var(--danger);margin-top:10px;font-size:14px}
+.passwordWrapper{position:relative}
+.passwordWrapper input{padding-right:40px}
+.togglePwd{position:absolute;top:50%;right:10px;transform:translateY(-50%);
+  cursor:pointer;color:var(--sub);font-size:14px}
+.togglePwd:hover{color:var(--accent-2)}
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Prixx Info and Achievements -->
+  <section>
+  <div class="card flexRow">
+    <!-- Left: About Prixx -->
+    <div class="flexCol">
+      <img src="Trademarked_PrixxLogo_PNG.avif" alt="Prixx Robotics Logo" class="logo">
+      <h1>About Prixx Robotics</h1>
+      <p>Founded in 2016, <b>Prixx Robotics</b> is a passionate student-led team dedicated to innovation in robotics. 
+      With over 50 members across mechanical, electronics, computer science, and management disciplines, we focus on developing advanced robots for competitions and real-world applications. 
+      Our mission is to push boundaries in design, engineering, and teamwork while inspiring the next generation of roboticists.</p>
+    </div>
+
+    <!-- Right: Achievements -->
+    <div class="flexCol">
+      <h2>Our Achievements</h2>
+      <ul>
+        <li>🥇 Winners of <b>Robowar</b> at <b>AMITY University</b> (2020)</li>
+        <li>🥇 Winners of <b>Gravitas</b> at <b>VIT Vellore</b> (2022)</li>
+        <li>🥇 Winners of <b>IIT TECH-FEST International Robowar</b> (2022)</li>
+        <li>🌍 Represented <b>INDIA</b> at the <b>World Championship Battle of Robots</b>, Russia (2023)</li>
+        <li>🥇 Winners of <b>Robowar</b> at <b>NIT Surat</b> (2024)</li>
+        <li>🥇 Winners of <b>Robowar</b> at <b>Parul University</b> (2025)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+  <!-- Project Info -->
+  <!-- Project: ATV with Robotic Arm (Focused on Real-World Use & Scope) -->
+<section>
+  <div class="card">
+    <h2>Project: ATV with Robotic Arm</h2>
+
+    <h3>Overview</h3>
+    <p>
+      The <strong>ATV with Robotic Arm</strong> is designed to operate in environments that are unsafe,
+      inaccessible, or challenging for humans. Combining all-terrain mobility with a versatile robotic arm,
+      it can navigate rough landscapes and perform precise manipulation tasks remotely. This makes it
+      an ideal solution for disaster response, industrial inspections, and hazardous material handling.
+    </p>
+
+    <h3>Real-World Applications</h3>
+    <ul>
+      <li><strong>Disaster Response:</strong> Enter collapsed buildings or unsafe zones to clear debris, retrieve objects, or assist in rescue operations without risking human lives.</li>
+      <li><strong>Industrial Safety:</strong> Handle tools, equipment, or hazardous substances in environments such as chemical plants, power stations, or nuclear facilities.</li>
+      <li><strong>Military & Defense:</strong> Perform reconnaissance, bomb disposal, or supply delivery in high-risk combat zones.</li>
+      <li><strong>Agriculture & Mining:</strong> Access difficult terrains to carry tools, monitor sites, or manipulate materials in the field.</li>
+      <li><strong>Space & Research:</strong> Demonstrate modular robotics concepts for planetary exploration and field research in remote areas.</li>
+    </ul>
+
+    <h3>Future Scope</h3>
+    <ul>
+      <li><strong>Autonomy:</strong> Integration of AI-driven navigation and obstacle avoidance for semi-autonomous missions.</li>
+      <li><strong>Vision-Guided Manipulation:</strong> Advanced computer vision for object recognition, automated pick-and-place, and precise handling.</li>
+      <li><strong>Scalability:</strong> Development of smaller and larger variants tailored for agriculture, defense, and industrial logistics.</li>
+      <li><strong>Connectivity:</strong> Expansion to 5G/LTE-based long-range operation for remote monitoring and control from anywhere in the world.</li>
+      <li><strong>Sustainability:</strong> Exploration of renewable energy integration, such as solar-powered charging stations, for extended field operations.</li>
+    </ul>
+
+    <p style="margin-top:12px;color:var(--sub);">
+      This project demonstrates how robotics can extend human capabilities into environments that are
+      dangerous, inaccessible, or demanding. It not only serves as a competition-ready robot but also
+      lays the foundation for real-world deployments across industries and research.
+    </p>
+  </div>
+</section>
+
+
+  <!-- Login Section -->
+  <section>
+    <div class="card loginCard">
+      <h3>Login to Access Bot Control Panel</h3>
+      <input type="text" id="userid" placeholder="Enter ID">
+      <div class="passwordWrapper">
+        <input type="password" id="password" placeholder="Enter Password">
+        <span class="togglePwd" id="togglePwd">👁</span>
+      </div>
+      <button id="loginBtn">Login</button>
+      <div class="error" id="errorMsg"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const loginBtn=document.getElementById('loginBtn');
+const userId=document.getElementById('userid');
+const password=document.getElementById('password');
+const errorMsg=document.getElementById('errorMsg');
+const togglePwd=document.getElementById('togglePwd');
+
+// Toggle show/hide password
+togglePwd.onclick=()=>{
+  if(password.type==="password"){
+    password.type="text";
+    togglePwd.textContent="🙈";
+  } else {
+    password.type="password";
+    togglePwd.textContent="👁";
+  }
+};
+
+loginBtn.onclick=()=>{
+  const id=userId.value.trim();
+  const pass=password.value.trim();
+  if(id==="Prixx.OP" && pass==="Prixx123"){
+    errorMsg.textContent="";
+    // redirect to esp4.html (same folder)
+    window.location.href="esp4.html";  
+  } else {
+    errorMsg.textContent="Invalid ID or Password";
+  }
+};
+</script>
+</body>
+</html>
