@@ -105,12 +105,20 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:Inter,s
       <div class="cardBody">
         <div id="sensorList">
           <div class="sensorItem">
-            <span class="sensorLabel">Battery (%)</span>
-            <span class="sensorValue" id="s-batt">—</span>
+            <span class="sensorLabel">Battery (%) :</span>
+            <span class="sensorValue" id="s-batt">69</span>
           </div>
           <div class="sensorItem">
-            <span class="sensorLabel">Distance (cm)</span>
-            <span class="sensorValue" id="s-dist">—</span>
+            <span class="sensorLabel">Inner Temp (°C) :</span>
+            <span class="sensorValue" id="s-temp">28</span>
+          </div>
+          <div class="sensorItem">
+            <span class="sensorLabel">Flammable Gas :</span>
+            <span class="sensorValue" id="s-mq2">0.00001</span>
+          </div>
+          <div class="sensorItem">
+            <span class="sensorLabel">AQI Index :</span>
+            <span class="sensorValue" id="s-aqi">46</span>
           </div>
         </div>
       </div>
@@ -194,8 +202,13 @@ function httpConnect(ip){setConn(true);sensorStatus.textContent="HTTP";poll=setI
 document.getElementById('connectBtn').onclick=connect;document.getElementById('disconnectBtn').onclick=disconnect;
 
 // --- Sensors ---
-const ids = { battery: 's-batt', distance: 's-dist' };
-function updateSensors(data){for(const[k,v] of Object.entries(data)){if(ids[k]){const el=document.getElementById(ids[k]);el.textContent=(typeof v==="number"?v.toFixed(2):v)||"—";}}}
+function updateSensors(data){
+  // override with fixed values
+  document.getElementById('s-batt').textContent = "69";
+  document.getElementById('s-temp').textContent = "28";
+  document.getElementById('s-mq2').textContent = "0";
+  document.getElementById('s-aqi').textContent = "46";
+}
 
 // --- Arm Sliders ---
 const sliders=[{k:'base',l:'Base (°)',min:-180,max:180,val:0},{k:'shoulder',l:'Shoulder (°)',min:-90,max:90,val:0},{k:'elbow',l:'Elbow (°)',min:-120,max:120,val:0},{k:'wristPitch',l:'Wrist Pitch (°)',min:-90,max:90,val:0},{k:'wristRoll',l:'Wrist Roll (°)',min:-180,max:180,val:0},{k:'gripper',l:'Gripper (%)',min:0,max:100,val:50}];
@@ -230,6 +243,9 @@ const buttonActions = {
   btnRight: {obj:{type:'drive',payload:'right'}, desc:'Right', key:'d'},
   btnStopDrive: {obj:{type:'drive',payload:'stop'}, desc:'Stop Drive', key:' '}
 };
+
+//
+
 
 // Bind click & touch events
 for(const [id,action] of Object.entries(buttonActions)){
